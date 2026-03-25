@@ -1,0 +1,88 @@
+name: SonicRStrategy
+timeframe: "15m"
+htf_timeframe: "4h"
+
+timeframe_mapping:
+  "1m": "1h"
+  "5m": "4h"
+  "15m": "4h"
+  "1h": "1d"
+  "4h": "1w"
+
+timeframe_configs:
+  "1m":
+    sl_pct: 0.005
+    tp_levels: [0.008, 0.015]
+    max_ema_gap_pct: 0.01
+  "5m":
+    sl_pct: 0.01
+    tp_levels: [0.015, 0.03]
+    max_ema_gap_pct: 0.02
+  "15m":
+    sl_pct: 0.02
+    tp_levels: [0.02, 0.04]
+    max_ema_gap_pct: 0.03
+  "1h":
+    sl_pct: 0.03
+    tp_levels: [0.04, 0.08]
+    max_ema_gap_pct: 0.05
+  "4h":
+    sl_pct: 0.05
+    tp_levels: [0.10, 0.20]
+    max_ema_gap_pct: 0.08
+
+indicators:
+  ema_lengths: [34, 89, 200, 610]
+  rsi_period: 14
+  ema_rsi_lengths: [5, 10, 20]
+  supertrend_length: 10
+  supertrend_multiplier: 3.0
+  volume_ma_period: 20
+  atr_period: 14
+
+signal:
+  lookback_candles: 3        # Số nến cuối cùng để kiểm tra tín hiệu
+  signal_window: 5           # Cửa sổ tìm điểm đảo chiều
+  min_candles_required: 620  # Tối thiểu cần để tính EMA610
+
+filters:
+  min_ema_distance: 0        # Khoảng cách tối thiểu giữa EMA34/89/200 (0 = tắt)
+  min_ema_34: 0              # Ngưỡng tối thiểu của EMA34 (0 = tắt)
+  enable_ichimoku: false     # Bật filter Ichimoku Cloud
+  enable_volume_filter: false  # Volume > Volume MA(20)
+  enable_htf_supertrend: false # Bật HTF Supertrend filter
+  cross_distance_ema_pair: "200_610" # Pair để tính max_cross_ago (200_610, 89_200, 34_89)
+  max_cross_ago: 50          # Max nến từ lần EMA cắt nhau (ngăn chặn vào lệnh muộn)
+  max_ema_gap_pct: 0.03      # Khoảng cách giá tối đa so với EMA 200/610 (3%)
+  max_candle_size_atr: 2.0   # Chặn vào lệnh nếu nến dài > 2 lần ATR (Spike Filter)
+
+risk_management:
+  sl_pct: 0.02               # Stoploss 2% 
+  tp_levels: [0.02, 0.04]    # Các mức chốt lời (2%, 4%)
+  tp_size: 0.5               # Chốt 50% mỗi lần TP
+  max_holding: 100           # Tối đa 100 nến
+  sl_atr_multiplier: 1.5     # SL = entry ± ATR × 1.5
+  tp_atr_multiplier: 3.0     # TP = entry ± ATR × 3.0  (RR 1:2)
+
+setups:
+  - name: "SonicR Long"
+    signal_type: "LONG"
+    enabled: true
+    min_ema_distance: 0
+    min_ema_34: 0
+    enable_ichimoku: false
+    enable_volume_filter: false
+    enable_htf_supertrend: false
+    max_cross_ago: 50
+    max_ema_gap_pct: 0.03
+
+  - name: "SonicR Short"
+    signal_type: "SHORT"
+    enabled: true
+    min_ema_distance: 0
+    min_ema_34: 0
+    enable_ichimoku: false
+    enable_volume_filter: false
+    enable_htf_supertrend: false
+    max_cross_ago: 50
+    max_ema_gap_pct: 0.03

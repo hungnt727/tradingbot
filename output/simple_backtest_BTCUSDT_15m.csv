@@ -1,0 +1,4 @@
+entry_time,entry_price,pnl_pct,exit_candles,exit_reason,tp1,tp2
+03-23 00:30,67684.4,-0.02,42,SL_HIT_100%,✗,✗
+03-23 06:30,67819.3,-0.02,18,SL_HIT_100%,✗,✗
+03-23 09:15,68257.6,-0.02,7,SL_HIT_100%,✗,✗

@@ -1,0 +1,27 @@
+version: '3'
+services:
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    restart: unless-stopped
+    container_name: freqtrade_sonicr
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      # Mount the project strategies so Freqtrade can import them
+      - "../strategies:/freqtrade/strategies_lib"
+      - "../config:/freqtrade/config_lib"
+      - "../data:/freqtrade/data_lib"
+      - "../utils:/freqtrade/utils_lib"
+      - "../backtest:/freqtrade/backtest_lib"
+      # Also map our strategy config directly
+      - "../config/strategies/sonicr_strategy.yaml:/freqtrade/user_data/strategies/sonicr_strategy.yaml"
+    ports:
+      - "8080:8080"
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.sqlite
+      --config /freqtrade/user_data/config.json
+      --strategy SonicRStrategy
+      --strategy-path /freqtrade/user_data/strategies
+    environment:
+      - PYTHONPATH=/freqtrade:/freqtrade/strategies_lib

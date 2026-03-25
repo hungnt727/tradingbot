@@ -1,0 +1,39 @@
+# Core
+ccxt==4.3.93
+pandas>=2.3.2
+pandas-ta>=0.4.71b0
+numpy>=2.2.6
+
+# Database
+sqlalchemy==2.0.30
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# Redis
+redis==5.0.4
+
+# Scheduler
+apscheduler==3.10.4
+
+# CLI
+click==8.1.7
+loguru==0.7.2
+
+# Environment
+python-dotenv==1.0.1
+
+# Testing
+pytest==8.2.0
+pytest-asyncio==0.23.6
+pytest-mock==3.14.0
+
+# Reporting (Phase 3)
+quantstats==0.0.62
+plotly==5.22.0
+
+# Dashboard (Phase 4)
+streamlit>=1.40.0
+requests==2.31.0
+
+# Docker
+PyYAML==6.0.1

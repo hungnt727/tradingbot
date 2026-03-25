@@ -1,0 +1,74 @@
+name: DistributionStrategy
+timeframe: "1d"
+htf_timeframe: "1w"
+
+# Distribution detection parameters
+distribution:
+  lookback_period: 30           # Số nến để tính range phân phối
+  range_calc_method: "swing"     # "swing" hoặc "fixed" - cách tính range
+  swing_window: 20               # Cửa sổ tìm swing high/low
+  upper_zone_threshold: 0.60     # Vùng trên của range (60% từ low lên high) - BEST PARAM
+  lower_zone_threshold: 0.30     # Vùng dưới của range (30% từ low lên high)
+
+# Indicators for distribution confirmation
+indicators:
+  ema_lengths: [20, 50, 200]     # EMA để xác nhận xu hướng giảm
+  rsi_period: 14                  # RSI period
+  volume_ma_period: 20           # Volume MA period
+  atr_period: 14                 # ATR period cho SL/TP
+
+# Distribution confirmation filters
+filters:
+  require_ema_bearish: false      # Không yêu cầu EMA xác nhận giảm giá - BEST PARAM
+  require_volume_spike: false     # Không yêu cầu volume tăng đột biến - BEST PARAM
+  require_rsi_bearish: false      # Không yêu cầu RSI < 50
+  min_volume_ratio: 1.5          # Tỷ lệ volume so với MA
+  require_adx_strong: false       # Không yêu cầu ADX > 25
+  adx_threshold: 25
+
+# Signal detection
+signal:
+  lookback_candles: 3            # Số nến cuối để kiểm tra tín hiệu
+  min_candles_required: 200       # Tối thiểu cần để tính EMA200
+  cooldown_period: 5             # Khoảng cách giữa 2 tín hiệu
+
+# Entry zone detection
+entry_zones:
+  upper_range_entry: true        # Vào lệnh khi giá ở vùng trên của range
+  middle_range_entry: false      # Vào lệnh khi giá ở vùng giữa
+  allow_reentry: false            # Cho phép vào lại sau khi thất bại
+
+# Risk management
+risk_management:
+  sl_pct: 1.00                    # Stoploss 100% cho SHORT (giá X2 mới SL)
+  sl_atr_multiplier: 2.0         # SL = entry ± ATR × 2.0
+  tp_levels: [0.05, 0.10, 0.15, 0.20]  # Các mức chốt lời
+  tp_size: 0.25                   # Chốt 25% mỗi lần TP
+  max_holding: 30                 # Tối đa 30 ngày (nến 1D)
+  trailing_sl: false               # Tắt trailing stop khi SL rộng
+  trailing_atr_mult: 1.5          # Trailing stop ATR multiplier
+
+# Position sizing
+position_sizing:
+  default_size_pct: 10           # % vốn cho mỗi lệnh
+  max_positions: 5               # Tối đa vị thế đồng thời
+  reduce_on_consecutive_losses: true
+  max_consecutive_losses: 3
+
+# Setups
+setups:
+  - name: "Distribution Short"
+    signal_type: "SHORT"
+    enabled: true
+    require_ema_bearish: false  # BEST PARAM
+    require_volume_spike: false # BEST PARAM
+    require_rsi_bearish: false
+    upper_zone_threshold: 0.60  # BEST PARAM
+
+  - name: "Distribution Short Conservative"
+    signal_type: "SHORT"
+    enabled: false
+    require_ema_bearish: true
+    require_volume_spike: false
+    require_rsi_bearish: false
+    upper_zone_threshold: 0.70

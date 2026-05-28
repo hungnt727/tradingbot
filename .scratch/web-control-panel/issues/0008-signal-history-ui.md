@@ -1,7 +1,7 @@
 ---
 id: "0008"
 title: Signal history UI
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0006"]
 covers_user_stories: ["#30", "#31", "#32"]

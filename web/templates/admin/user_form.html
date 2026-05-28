@@ -1,0 +1,10 @@
+{# Create-user form partial, included by users_list.html #}
+<form method="post" action="/admin/users">
+    <label>Username <input type="text" name="username" required></label>
+    <label>Password <input type="password" name="password" required></label>
+    <label>Default Telegram chat ID (optional)
+        <input type="text" name="default_telegram_chat_id">
+    </label>
+    <label><input type="checkbox" name="is_admin" value="true"> Make admin</label>
+    <button type="submit">Create user</button>
+</form>

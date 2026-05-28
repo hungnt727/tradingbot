@@ -1,7 +1,7 @@
 ---
 id: "0010"
 title: Tailscale + systemd deployment
-status: ready-for-human
+status: artifacts-ready-for-human
 type: HITL
 blocked_by: ["0009"]
 covers_user_stories: ["#44", "#45", "#46", "#47", "#50"]

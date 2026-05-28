@@ -1,7 +1,7 @@
 ---
 id: "0003"
 title: Admin user CRUD
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0002"]
 covers_user_stories: ["#4", "#5", "#6", "#7", "#8", "#9"]

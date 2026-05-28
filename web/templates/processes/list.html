@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Processes — TradingBot Control Panel{% endblock %}
+{% block content %}
+<h1>{% if is_admin_view %}All processes (admin, read-only){% else %}My processes{% endif %}</h1>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+{% if not is_admin_view %}<p><a href="/processes/new">+ New process</a></p>{% endif %}
+
+{% if not is_admin_view %}
+<details style="margin:.8rem 0;padding:.6rem .8rem;background:#f7f7f7;border-radius:.4rem">
+    <summary style="cursor:pointer;font-weight:600">ℹ️ Giải thích các cột & hành động</summary>
+    <dl style="margin:.6rem 0 0;display:grid;grid-template-columns:max-content 1fr;gap:.4rem 1rem">
+        <dt><strong>Status</strong></dt>
+        <dd>
+            <span class="badge" style="background:#777">idle</span> chưa quét lần nào hoặc đã tắt &middot;
+            <span class="badge" style="background:#c79100">running…</span> worker đang quét &middot;
+            <span class="badge" style="background:#0a7d28">OK</span> quét gần nhất hoàn thành &middot;
+            <span class="badge" style="background:#0a7d28">OK ⚠</span> quét OK nhưng gửi Telegram lỗi (hover xem) &middot;
+            <span class="badge" style="background:#b00020">error</span> quét thất bại (hover xem)
+        </dd>
+        <dt><strong>Start / Stop</strong></dt>
+        <dd>Bật/tắt tự động quét theo chu kỳ (cột <em>Interval</em>). Tên nút là <em>action sẽ làm khi click</em>: đang bật thì hiện "Stop", đang tắt thì hiện "Start". Bật process sẽ gửi Telegram <code>▶️ Đã bật</code>; tắt gửi <code>⏸️ Đã tắt</code>.</dd>
+        <dt><strong>Quét ngay</strong></dt>
+        <dd>Yêu cầu worker quét NGAY một lần, ngoài chu kỳ định kỳ. Dùng được cả khi process đang Stop. Click sẽ nhận <code>🔍 Đã yêu cầu quét</code> ngay, sau đó <code>✅ Quét xong</code> hoặc <code>❌ Quét thất bại</code> khi worker hoàn thành.</dd>
+        <dt><strong>Signals</strong></dt>
+        <dd>Xem lịch sử tín hiệu mà process đã phát hiện, kèm snapshot indicator (RSI, EMA RSI 5/10/20, ATR…) tại thời điểm fire.</dd>
+        <dt><strong>Telegram khi quét xong</strong></dt>
+        <dd>Mọi run (định kỳ + Quét ngay) đều gửi <code>✅ Quét xong — &lt;tên&gt; / Tín hiệu mới: N</code> ngay cả khi <code>N=0</code>. Cần đặt <em>Telegram chat ID</em> (trong Process hoặc Profile) — nếu trống thì bỏ qua.</dd>
+    </dl>
+</details>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            {% if is_admin_view %}<th>Owner</th>{% endif %}
+            <th>Name</th><th>Strategy</th><th>Exchange</th><th>Symbols</th>
+            <th>Interval</th><th>Status</th>{% if not is_admin_view %}<th>Actions</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody id="proc-rows" {% if not is_admin_view %}hx-get="/processes/rows" hx-trigger="every 3s" hx-swap="innerHTML"{% endif %}>
+        {% include "processes/_rows.html" %}
+    </tbody>
+</table>
+{% endblock %}

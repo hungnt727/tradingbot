@@ -1,0 +1,50 @@
+# Secrets — must NEVER end up in the image
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Local Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local DB / log artifacts
+logs/
+*.log
+*.db
+test_*.db
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Git internals — image doesn't need history
+.git/
+.gitignore
+
+# Tests + dev docs (optional, shrinks image ~5-10MB)
+tests/
+.scratch/
+
+# Backtest output, data caches
+output/
+data/cache/
+data/top_300_cache.json
+
+# Tools that won't run in container
+scripts/worker.ps1
+scripts/web.ps1
+
+# Compose files (not needed inside the image)
+docker/
+docker-compose*.yml
+Dockerfile
+.dockerignore

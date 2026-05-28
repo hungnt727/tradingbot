@@ -2,7 +2,7 @@
 
 Crypto Trading Bot framework. Pipeline gồm 5 phase: **Data Crawler → Strategy Engine → Backtesting → Paper Trading → Live Trading (Freqtrade)**. Tích hợp Binance/Bybit qua `ccxt`, lưu OHLCV trong **TimescaleDB**, real-time cache trong **Redis**, dashboard bằng **Streamlit**, cảnh báo qua **Telegram**.
 
-Xem [README.md](./README.md) cho hướng dẫn vận hành đầy đủ.
+Xem [Readme/getting-started.md](./Readme/getting-started.md) cho hướng dẫn vận hành đầy đủ; [Readme/scripts.md](./Readme/scripts.md) cho 2 PowerShell helper quản lý worker + web; [Readme/deploy.md](./Readme/deploy.md) (venv+systemd) hoặc [Readme/deploy-docker.md](./Readme/deploy-docker.md) (Docker pull) cho deploy VPS.
 
 ## Cấu trúc module
 

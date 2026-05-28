@@ -1,0 +1,17 @@
+{# Indicator-snapshot modal fragment, swapped into #signal-modal by HTMX. #}
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;
+            align-items:center;justify-content:center" onclick="this.remove()">
+    <div style="background:#fff;padding:1.2rem;border-radius:.5rem;max-width:640px;width:90%"
+         onclick="event.stopPropagation()">
+        <h3>{{ signal.symbol }} — {{ signal.signal_type }}
+            <small>({{ signal.timestamp_candle.strftime("%Y-%m-%d %H:%M") }} UTC)</small></h3>
+        <p>
+            Exchange: {{ signal.exchange }} | TF: {{ signal.timeframe }} |
+            Telegram:
+            {% if signal.telegram_sent %}sent{% elif signal.telegram_error %}failed ({{ signal.telegram_error }}){% else %}pending{% endif %}
+        </p>
+        <h4>Indicators snapshot</h4>
+        <pre style="background:#f3f3f3;padding:.6rem;overflow:auto;max-height:320px">{{ snapshot }}</pre>
+        <button type="button" onclick="document.getElementById('signal-modal').innerHTML=''">Close</button>
+    </div>
+</div>

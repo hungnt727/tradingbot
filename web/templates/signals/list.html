@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Signals — TradingBot Control Panel{% endblock %}
+{% block content %}
+<h1>Signal history</h1>
+<p><a href="/processes">← Back to processes</a></p>
+
+<form hx-get="/processes/{{ process_id }}/signals" hx-target="#signals-table" hx-swap="outerHTML"
+      style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:end;margin-bottom:1rem">
+    <label>Exchange <input type="text" name="exchange" value="{{ filters.exchange }}"></label>
+    <label>Symbol <input type="text" name="symbol" value="{{ filters.symbol }}"></label>
+    <label>Type
+        <select name="signal_type">
+            <option value="">any</option>
+            <option value="SHORT" {{ "selected" if filters.signal_type == "SHORT" else "" }}>SHORT</option>
+            <option value="LONG" {{ "selected" if filters.signal_type == "LONG" else "" }}>LONG</option>
+        </select>
+    </label>
+    <label>From <input type="date" name="date_from" value="{{ filters.date_from }}"></label>
+    <label>To <input type="date" name="date_to" value="{{ filters.date_to }}"></label>
+    <button type="submit">Filter</button>
+</form>
+
+{% include "signals/_table.html" %}
+
+<div id="signal-modal"></div>
+{% endblock %}

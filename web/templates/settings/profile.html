@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Settings — TradingBot Control Panel{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+{% if message %}<p style="color:#0a7d28">{{ message }}</p>{% endif %}
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+
+<h2>Telegram</h2>
+<form method="post" action="/settings/profile">
+    <label>Default Telegram chat ID
+        <input type="text" id="chat_id_field" name="default_telegram_chat_id"
+               value="{{ profile.default_telegram_chat_id or '' }}">
+    </label>
+    <button type="submit">Save</button>
+    <button type="button"
+            hx-post="/settings/test-telegram"
+            hx-include="#chat_id_field"
+            hx-target="#telegram-toast"
+            hx-swap="innerHTML">
+        Test Telegram
+    </button>
+</form>
+<div id="telegram-toast" aria-live="polite"></div>
+
+<h2>Change password</h2>
+<form method="post" action="/settings/password">
+    <label>Current password <input type="password" name="old_password" required></label>
+    <label>New password <input type="password" name="new_password" required></label>
+    <button type="submit">Change password</button>
+</form>
+{% endblock %}

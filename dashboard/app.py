@@ -12,7 +12,7 @@ from datetime import datetime
 # Allow importing from project root
 sys.path.append(str(Path(__file__).parent.parent))
 
-# import streamlit as st  # TEMPORARILY COMMENTED OUT DUE TO NUMPY VERSION CONFLICT
+import streamlit as st
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, select
@@ -31,14 +31,19 @@ st.set_page_config(
 
 # Connect to DB
 @st.cache_resource
-def get_db_session():
+def get_engine():
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         st.error("DATABASE_URL not found in environment.")
         st.stop()
-    engine = create_engine(db_url)
-    Session = sessionmaker(bind=engine)
-    return Session()
+    return create_engine(db_url, pool_pre_ping=True)
+
+
+def get_db_session():
+    # Fresh session per rerun. Caching a single Session means one failed query
+    # aborts its transaction and poisons every later rerun
+    # ("current transaction is aborted") — a new session each run avoids that.
+    return sessionmaker(bind=get_engine())()
 
 
 def load_trades(session, status=None):

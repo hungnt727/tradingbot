@@ -1,7 +1,7 @@
 ---
 id: "0006"
 title: Worker end-to-end scan + signal insert + Telegram alert
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0004", "0005"]
 covers_user_stories: ["#28", "#29", "#33", "#34", "#35", "#36", "#37", "#38", "#39", "#40", "#41", "#42"]

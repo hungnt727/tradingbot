@@ -1,0 +1,34 @@
+{% macro symbols_summary(p) %}
+    {%- if p.symbols_mode == "top_n" -%}Top {{ p.symbols_value.get("top_n") }}
+    {%- else -%}{{ p.symbols_value.get("list", []) | length }} symbols
+    {%- endif -%}
+{% endmacro %}
+{% for p in processes %}
+    <tr>
+        {% if is_admin_view %}<td>{{ p.owner.username if p.owner else p.owner_user_id }}</td>{% endif %}
+        <td>{{ p.name }}</td>
+        <td>{{ p.strategy_name }}</td>
+        <td>{{ p.exchange }}</td>
+        <td>{{ symbols_summary(p) }}</td>
+        <td>{{ p.interval_minutes }}m</td>
+        <td>{% include "processes/_status_badge.html" %}</td>
+        {% if not is_admin_view %}
+        <td style="display:flex;gap:.3rem;flex-wrap:wrap">
+            <form method="post" action="/processes/{{ p.id }}/toggle">
+                <button type="submit">{{ "Stop" if p.is_active else "Start" }}</button>
+            </form>
+            <button type="button" title="Run one scan now"
+                    hx-post="/processes/{{ p.id }}/force-run"
+                    hx-target="#proc-rows" hx-swap="innerHTML">Quét ngay</button>
+            <a href="/processes/{{ p.id }}/signals"><button type="button">Signals</button></a>
+            <a href="/processes/{{ p.id }}/edit"><button type="button">Edit</button></a>
+            <form method="post" action="/processes/{{ p.id }}/delete"
+                  onsubmit="return confirm('Delete process {{ p.name }}?')">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+        {% endif %}
+    </tr>
+{% else %}
+    <tr><td colspan="9"><em>No processes yet.</em></td></tr>
+{% endfor %}

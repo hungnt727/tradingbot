@@ -1,7 +1,7 @@
 ---
 id: "0005"
 title: Process CRUD (custom-list mode only, no execution)
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0002"]
 covers_user_stories: ["#16", "#17", "#18", "#19", "#20", "#21", "#22", "#23", "#26", "#27"]

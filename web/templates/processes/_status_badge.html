@@ -1,0 +1,13 @@
+{# Renders a colored status badge for a process. `status` = process.last_run_status. #}
+{% set status = p.last_run_status or "idle" %}
+{% if status == "running" %}
+    <span class="badge" style="background:#c79100">running…</span>
+{% elif status == "OK" %}
+    <span class="badge" style="background:#0a7d28">OK</span>
+{% elif status.startswith("OK (telegram error") %}
+    <span class="badge" style="background:#0a7d28" title="{{ status }}">OK ⚠</span>
+{% elif status.startswith("error") %}
+    <span class="badge" style="background:#b00020" title="{{ status }}">error</span>
+{% else %}
+    <span class="badge" style="background:#777">idle</span>
+{% endif %}

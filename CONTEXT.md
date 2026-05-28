@@ -84,6 +84,26 @@ Mode Freqtrade chạy như paper nhưng dùng giá realtime của exchange. Mặ
 Bot quét tín hiệu và gửi Telegram, KHÔNG mở trade thật cũng KHÔNG mở paper trade. Chỉ là alert. Ví dụ: [`cli/run_distribution_signal_bot.py`](./cli/run_distribution_signal_bot.py), [`cli/run_ema_rsi_reversal_bot.py`](./cli/run_ema_rsi_reversal_bot.py).
 _Avoid_: gọi nó là "trading bot" — đây là alert bot, không trade.
 
+### Web Control Panel layer (Phase 6)
+
+**Web Control Panel**
+UI private (truy cập qua Tailscale) để 2-5 user CRUD các Process Signal Bot và xem lịch sử Signal. Gồm 2 service: `web/` (FastAPI) + `worker/` (daemon). Là frontend của **Signal Bot**, KHÔNG phải trading UI. Schema sống ở DB riêng `tradingbot_app` (tách khỏi `tradingbot` OHLCV DB).
+_Avoid_: "dashboard" (dashboard = Streamlit của paper trading), "admin panel" (admin chỉ là 1 role trong Web Control Panel).
+
+**Process** (capital P, domain term)
+Một cấu hình quét Signal Bot do user tạo: 1 Strategy + bộ params + Exchange + scope Symbol (Top N hoặc list) + interval + Telegram chat ID. Lưu trong bảng `tradingbot_app.processes`. User CRUD và bật/tắt độc lập từng Process. **Worker daemon** đọc bảng này để biết khi nào cần scan.
+_Avoid_: "OS process" / "Python process" (dùng "system process" nếu cần nói về OS). "job", "task", "bot config" → đều dùng "Process".
+
+**Worker daemon**
+System actor chạy nền 24/7 ngoài web service. Single-threaded polling loop, mỗi 10-30s đọc DB tìm Process đến hạn, gọi Strategy, ghi Signal, gửi Telegram. KHÔNG dùng Celery/APScheduler — loop tự quản. Là service systemd thứ 2 song song với `web/`.
+_Avoid_: "scheduler" (existing `cli/start_scheduler.py` là APScheduler cho OHLCV crawl — concept khác), "background job" (quá generic).
+
+**Run cycle**
+Một lần quét của Worker daemon cho 1 Process. State machine: `idle → running → done (OK | error)`. Trạng thái lưu trong `processes.last_run_status` + `processes.last_run_started_at`. Crash giữa cycle do **Reaper** sub-step healing.
+
+**Reaper**
+Sub-step ở đầu mỗi loop của Worker daemon: reset bất kỳ Process nào kẹt `last_run_status='running'` quá 10 phút về `error: timeout`. Tránh deadlock vĩnh viễn khi worker crash.
+
 ---
 
 ## Relationships
@@ -110,7 +130,20 @@ Một **Strategy** sinh ra nhiều **Signal**. Một **Signal** có thể trở 
 - 1 Telegram message (Signal Bot path)
 - 1 order thật do Freqtrade execute (Live path)
 
-Đường đi nào kích hoạt là tùy CLI runner ở `cli/`.
+Đường đi nào kích hoạt là tùy CLI runner ở `cli/` — **hoặc** **Worker daemon** đọc **Process** từ `tradingbot_app.processes` (Phase 6 / Web Control Panel path):
+
+```
+Web Control Panel ──CRUD──> Process (tradingbot_app.processes)
+                                │
+                                ▼
+                         Worker daemon ──poll──> Run cycle
+                                                    │
+                                                    ▼
+                                       Strategy → Signal → Telegram
+                                                    │
+                                                    ▼
+                                       Signal history UI
+```
 
 ---
 
@@ -119,6 +152,7 @@ Một **Strategy** sinh ra nhiều **Signal**. Một **Signal** có thể trở 
 - ~~"bot" có 2 nghĩa~~ — đã resolve: **Signal Bot** (alert only) vs **Paper Trading bot** vs **Live Trading bot** (Freqtrade). Luôn prefix rõ.
 - ~~"trade" vs "signal"~~ — đã resolve: **Signal** là tín hiệu trong DataFrame (chưa execute). **Trade** là vị thế đã mở (paper hoặc live).
 - "freqtrade strategy" vs "BaseStrategy" — chúng là 2 class khác nhau. `BaseStrategy` (repo này) làm việc trên DataFrame, không biết exchange. `strategies/freqtrade/sonicr_ft.py` là Freqtrade adapter wrap logic core. Khi nói "strategy" không kèm context, mặc định là `BaseStrategy`.
+- "Process" overload — domain **Process** (Phase 6 Signal Bot config trong DB) vs OS process (Python interpreter). Luôn viết hoa **Process** khi nói về domain term; dùng "OS process" / "system process" / "Python process" khi nói về kernel-level.
 
 ---
 

@@ -86,7 +86,7 @@ class TestDfToRecords:
         records = binance_crawler.df_to_records(df)
         assert isinstance(records, list)
         assert len(records) == 2
-        assert "time" in records[0]
+        assert "timestamp" in records[0]
         assert "open" in records[0]
         assert isinstance(records[0]["open"], float)
 

@@ -1,0 +1,18 @@
+[Unit]
+Description=TradingBot Web Control Panel (FastAPI)
+After=network.target postgresql.service redis.service tailscaled.service
+Requires=tailscaled.service
+
+[Service]
+Type=simple
+User=tradingbot
+WorkingDirectory=/opt/tradingbot
+EnvironmentFile=/opt/tradingbot/.env
+# Bind ONLY on the Tailscale tailnet IP so the app is unreachable from the
+# public internet. Replace 100.x.x.x with this VPS's tailnet IP (`tailscale ip -4`).
+ExecStart=/opt/tradingbot/venv/bin/uvicorn web.app:app --host 100.x.x.x --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

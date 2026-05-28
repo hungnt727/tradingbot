@@ -1,7 +1,7 @@
 ---
 id: "0007"
 title: CMC Top N caching + symbols resolver
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0006"]
 covers_user_stories: ["#17 (top_n mode)", "#37 (dedupe via cache)"]

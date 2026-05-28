@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Home — TradingBot Control Panel{% endblock %}
+{% block content %}
+<h1>Welcome, {{ request.state.user.username }}</h1>
+<p>Manage your signal bots from the navigation above.</p>
+<ul>
+    <li><a href="/processes">Processes</a> — create and run signal-scanning bots.</li>
+    <li><a href="/settings">Settings</a> — default Telegram chat ID and password.</li>
+    {% if request.state.user.is_admin %}<li><a href="/admin/users">Users</a> — manage accounts.</li>{% endif %}
+</ul>
+{% endblock %}

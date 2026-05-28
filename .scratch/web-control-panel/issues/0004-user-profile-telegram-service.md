@@ -1,7 +1,7 @@
 ---
 id: "0004"
 title: User profile + Telegram service + test button
-status: ready-for-agent
+status: done
 type: AFK
 blocked_by: ["0002"]
 covers_user_stories: ["#13", "#14", "#15"]

@@ -1,0 +1,15 @@
+[Unit]
+Description=TradingBot Worker daemon (signal scanner)
+After=network.target postgresql.service redis.service
+
+[Service]
+Type=simple
+User=tradingbot
+WorkingDirectory=/opt/tradingbot
+EnvironmentFile=/opt/tradingbot/.env
+ExecStart=/opt/tradingbot/venv/bin/python -m worker.daemon
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

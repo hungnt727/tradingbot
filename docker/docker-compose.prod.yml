@@ -1,0 +1,84 @@
+# Production compose: 4 services (timescaledb, redis, web, worker).
+#
+# All app secrets come from the `.env` file beside this compose. Database +
+# Redis URLs are set in `environment:` here so they always point at the
+# docker-network service names — DO NOT put DATABASE_URL/APP_DATABASE_URL/
+# REDIS_URL in your .env (they would be silently overridden).
+#
+# Web listens on 127.0.0.1:8000 on the host. Expose to the tailnet with
+# `tailscale serve --bg --https=443 http://127.0.0.1:8000` (or 80, or any
+# tailnet-only port). DO NOT bind 0.0.0.0:8000 — that would expose publicly.
+#
+# Image:  ghcr.io/CHANGE_ME/tradingbot:latest
+# Replace CHANGE_ME with your GitHub username/org once the image is published
+# (see .github/workflows/docker-publish.yml).
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: tradingbot_timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tradingbot
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: tradingbot_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ghcr.io/CHANGE_ME/tradingbot:latest
+    container_name: tradingbot_web
+    restart: unless-stopped
+    env_file: .env                              # SESSION_SECRET_KEY, TELEGRAM_BOT_TOKEN, COINMARKETCAP_API_KEY
+    environment:
+      DATABASE_URL:     postgresql://postgres:postgres@timescaledb:5432/tradingbot
+      APP_DATABASE_URL: postgresql://postgres:postgres@timescaledb:5432/tradingbot_app
+      REDIS_URL:        redis://redis:6379/0
+    ports:
+      - "127.0.0.1:8000:8000"                   # host loopback only; tailscale serve exposes to tailnet
+    depends_on:
+      timescaledb: { condition: service_healthy }
+      redis:       { condition: service_healthy }
+    command: ["python", "-m", "uvicorn", "web.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  worker:
+    image: ghcr.io/CHANGE_ME/tradingbot:latest
+    container_name: tradingbot_worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL:     postgresql://postgres:postgres@timescaledb:5432/tradingbot
+      APP_DATABASE_URL: postgresql://postgres:postgres@timescaledb:5432/tradingbot_app
+      REDIS_URL:        redis://redis:6379/0
+    depends_on:
+      timescaledb: { condition: service_healthy }
+      redis:       { condition: service_healthy }
+    command: ["python", "-m", "worker.daemon"]
+
+volumes:
+  timescaledb_data:
+  redis_data:

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if process else "New" }} process — TradingBot{% endblock %}
+
+{% macro param_field(name, spec, values) %}
+    {% set val = values.get(name) %}
+    {% if spec.is_bool %}
+        <label title="{{ spec.description }}">
+            <input type="checkbox" name="{{ name }}" value="true" {{ "checked" if val else "" }}>
+            {{ name }} — {{ spec.description }}
+        </label>
+    {% else %}
+        <label title="{{ spec.description }}">
+            {{ name }} — {{ spec.description }}
+            <input type="number" name="{{ name }}"
+                   value="{{ val if val is not none else spec.default }}"
+                   {% if spec.ge is not none %}min="{{ spec.ge }}"{% endif %}
+                   {% if spec.le is not none %}max="{{ spec.le }}"{% endif %}
+                   step="{{ '1' if spec.is_int else 'any' }}" required>
+        </label>
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+<h1>{{ "Edit" if process else "New" }} process</h1>
+{% if error %}<p role="alert">{{ error }}</p>{% endif %}
+
+<form method="post" action="{{ ('/processes/' ~ process.id) if process else '/processes' }}">
+    {# Edit: strategy is locked — hidden input ensures it's still in the POST (route ignores it but template forms expect a value). #}
+    {# Create: strategy comes from the active dropdown below. #}
+    {% if lock_strategy %}
+    <input type="hidden" name="strategy_name" value="{{ strategy_name }}">
+    {% endif %}
+
+    <label>Name <input type="text" name="name" value="{{ values.get('name', '') }}" required></label>
+
+    <label>Strategy
+        {% if lock_strategy %}
+        <select disabled>
+            <option>{{ strategy_label }}</option>
+        </select>
+        <small>(strategy không thể đổi sau khi tạo)</small>
+        {% else %}
+        <select name="strategy_name"
+                onchange="window.location.href='/processes/new?strategy=' + encodeURIComponent(this.value)">
+            {% for key, label in strategy_choices %}
+            <option value="{{ key }}" {{ "selected" if strategy_name == key else "" }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </label>
+
+    <label>Exchange
+        <select name="exchange">
+            {% for ex in exchanges %}
+            <option value="{{ ex }}" {{ "selected" if values.get('exchange') == ex else "" }}>{{ ex }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <fieldset>
+        <legend>Symbols</legend>
+        {% set mode = values.get('symbols_mode', 'list') %}
+        <label>
+            <input type="radio" name="symbols_mode" value="list" onchange="toggleSymbolsMode()"
+                   {{ "checked" if mode == 'list' else "" }}> Custom list
+        </label>
+        <label>
+            <input type="radio" name="symbols_mode" value="top_n" onchange="toggleSymbolsMode()"
+                   {{ "checked" if mode == 'top_n' else "" }}> Top N (CoinMarketCap)
+        </label>
+        <div id="symbols-list-block">
+            <label>Symbols (one per line, e.g. BTC/USDT)
+                <textarea name="symbols_list" rows="5">{{ values.get('symbols_list', '') }}</textarea>
+            </label>
+        </div>
+        <div id="symbols-topn-block">
+            <label>Top N coins
+                <input type="number" name="top_n" min="1" max="500" step="1"
+                       value="{{ values.get('top_n', 100) }}">
+            </label>
+        </div>
+    </fieldset>
+    <script>
+        function toggleSymbolsMode() {
+            var mode = document.querySelector('input[name=symbols_mode]:checked').value;
+            document.getElementById('symbols-list-block').style.display = (mode === 'list') ? '' : 'none';
+            document.getElementById('symbols-topn-block').style.display = (mode === 'top_n') ? '' : 'none';
+        }
+        toggleSymbolsMode();
+    </script>
+
+    <label>Interval (minutes, ≥ 5)
+        <input type="number" name="interval_minutes" min="5" step="1"
+               value="{{ values.get('interval_minutes', 60) }}" required>
+    </label>
+
+    <label>Telegram chat ID override (optional — defaults to your profile)
+        <input type="text" name="telegram_chat_id" value="{{ values.get('telegram_chat_id', '') }}">
+    </label>
+
+    <h3>Strategy parameters</h3>
+    {% for name in basic_fields %}{{ param_field(name, specs[name], values) }}{% endfor %}
+
+    <details>
+        <summary>Advanced parameters</summary>
+        {% for name in advanced_fields %}{{ param_field(name, specs[name], values) }}{% endfor %}
+    </details>
+
+    <p>
+        <button type="submit">{{ "Save changes" if process else "Create process" }}</button>
+        <a href="/processes">Cancel</a>
+    </p>
+</form>
+{% endblock %}

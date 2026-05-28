@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}TradingBot Control Panel{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 0; color: #1a1a1a; }
+        nav { background: #111; color: #eee; padding: 0.6rem 1rem; display: flex; gap: 1rem; align-items: center; }
+        nav a { color: #eee; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        nav .spacer { flex: 1; }
+        main { padding: 1rem 1.5rem; max-width: 1100px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left; }
+        th { background: #f3f3f3; }
+        [role="alert"] { color: #b00020; }
+        .badge { padding: 0.1rem 0.45rem; border-radius: 0.6rem; font-size: 0.8rem; color: #fff; }
+        details summary { cursor: pointer; font-weight: 600; margin: 0.5rem 0; }
+        label { display: block; margin: 0.35rem 0; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    {% if request.state.user %}
+    <nav>
+        <a href="/">TradingBot</a>
+        <a href="/processes">Processes</a>
+        <a href="/settings">Settings</a>
+        {% if request.state.user.is_admin %}<a href="/admin/users">Users</a>{% endif %}
+        <span class="spacer"></span>
+        <span>{{ request.state.user.username }}{% if request.state.user.is_admin %} (admin){% endif %}</span>
+        <form method="post" action="/logout" style="margin:0">
+            <button type="submit">Log out</button>
+        </form>
+    </nav>
+    {% endif %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

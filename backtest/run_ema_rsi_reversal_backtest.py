@@ -122,7 +122,7 @@ def simulate_trade(df, entry_idx, entry_price, config=None):
     reason = "End_Of_Data" if next_tp_idx == 0 else f"TP{next_tp_idx}_EndOfData"
     return total_pnl, reason
 
-def run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=1620, config=None):
+def run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=1620, config=None, exchange="binance"):
     all_trades = []
     stats = {
         "SL": {"count": 0, "pnl": 0.0},
@@ -142,7 +142,7 @@ def run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=1620, confi
             
         # 1. Fetch 1D Data
         limit_1d = int(lookback / 24) + 600
-        df_1d = db.query_latest_ohlcv(exchange="bybit", symbol=symbol, timeframe="1d", limit=limit_1d)
+        df_1d = db.query_latest_ohlcv(exchange=exchange, symbol=symbol, timeframe="1d", limit=limit_1d)
         
         if df_1d.empty or len(df_1d) < strategy_1d.min_candles_required:
             continue
@@ -158,7 +158,7 @@ def run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=1620, confi
             continue
             
         # 2. Fetch 1H Data
-        df_1h = db.query_latest_ohlcv(exchange="bybit", symbol=symbol, timeframe="1h", limit=lookback)
+        df_1h = db.query_latest_ohlcv(exchange=exchange, symbol=symbol, timeframe="1h", limit=lookback)
         if df_1h.empty or len(df_1h) < strategy_1h.min_candles_required:
             continue
             
@@ -217,7 +217,12 @@ def run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=1620, confi
     return all_trades, win_rate, total_pnl, stats
 
 def main():
+    # Console Windows mặc định cp1252 → ép UTF-8 để in nhãn tiếng Việt không lỗi.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
     parser = argparse.ArgumentParser(description="EMA RSI Reversal Backtest Script")
+    parser.add_argument("--exchange", type=str, default="binance", help="Sàn đọc dữ liệu OHLCV từ DB (mặc định binance)")
     parser.add_argument("--top", type=int, default=100, help="Số lượng top coin muốn chạy (mặc định 100)")
     parser.add_argument("--lookback", type=int, default=1500, help="Số nến 1H tối đa fetch từ DB (mặc định 1500)")
     parser.add_argument("--n1d", type=int, default=20, help="Max distance nến 1D")
@@ -239,7 +244,8 @@ def main():
         engine = create_engine(DATABASE_URL)
         with engine.connect() as conn:
             db_symbols = [r[0] for r in conn.execute(
-                text("SELECT DISTINCT symbol FROM ohlcv WHERE timeframe='1h'")
+                text("SELECT DISTINCT symbol FROM ohlcv WHERE timeframe='1h' AND exchange=:ex"),
+                {"ex": args.exchange},
             ).fetchall()]
     except Exception as e:
         logger.error("❌ KHÔNG THỂ KẾT NỐI ĐẾN DATABASE (TimescaleDB/Postgres)!")
@@ -251,16 +257,19 @@ def main():
     for s in top_symbols:
         if s in db_symbols:
             symbols.append(s)
+        # Spot pair format (get_top_coins trả token trần, DB lưu "BTC/USDT")
+        elif f"{s}/USDT" in db_symbols:
+            symbols.append(f"{s}/USDT")
         elif f"{s}:USDT" in db_symbols:
             symbols.append(f"{s}:USDT")
-            
+
         # Thử cả Bybit Linear format
         elif f"{s}/USDT:USDT" in db_symbols:
              symbols.append(f"{s}/USDT:USDT")
              
     logger.info(f"Bat dau Backtest tren {len(symbols)} coins co luu du lieu 1H...")
     
-    trades, wr, pnl, stats = run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=args.lookback)
+    trades, wr, pnl, stats = run_backtest_mtf(db, symbols, strategy_1d, strategy_1h, lookback=args.lookback, exchange=args.exchange)
     count = len(trades)
     
     print("\n" + "="*60)

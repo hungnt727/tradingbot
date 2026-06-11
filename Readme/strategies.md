@@ -16,14 +16,14 @@ Cả 2 đăng ký trong `STRATEGY_REGISTRY` tại [web/schemas/strategy_params.p
 
 ### Ý nghĩa
 
-Phát hiện thời điểm momentum đang **suy yếu sau khi RSI vượt vùng quá mua**: 3 đường EMA của RSI (period 5, 10, 20) bắt đầu xếp lớp giảm dần (`ema_rsi_5 < ema_rsi_10 < ema_rsi_20`) trong khi `ema_rsi_20` vẫn cao (> 50). Đây là cấu hình "đỉnh đã hình thành nhưng chưa lao xuống" — vào SHORT trước khi đà giảm rõ ràng. Chỉ phát SHORT (không có LONG).
+Phát hiện thời điểm momentum đang **suy yếu sau khi RSI vượt vùng quá mua**: 3 đường EMA của RSI (period 5, 10, 20) bắt đầu xếp lớp giảm dần (`ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20`) trong khi `ema_rsi_20` vẫn cao (> 50). Đây là cấu hình "đỉnh đã hình thành nhưng chưa lao xuống" — vào SHORT trước khi đà giảm rõ ràng. Chỉ phát SHORT (không có LONG).
 
 ### Logic
 
 **Indicator** (mỗi khung):
 - `rsi(period=rsi_period)` trên close
 - `ema_rsi_5`, `ema_rsi_10`, `ema_rsi_20` = EMA của RSI ở các period 5/10/20
-- `is_reversal[t] = (ema_rsi_5<ema_rsi_10<ema_rsi_20) tại t` **AND** không thỏa tại `t-1` — đánh dấu nến **bắt đầu** suy yếu
+- `is_reversal[t] = (ema_rsi_5<ema_rsi_10 và ema_rsi_5<ema_rsi_20) tại t` **AND** không thỏa tại `t-1` — đánh dấu nến **bắt đầu** suy yếu
 - `bars_since_reversal[t]` = số nến tính từ `is_reversal` gần nhất
 - `ema_filter` = EMA-200 của close (dùng cho 1D nếu `use_ema_filter=true`)
 - `atr` = ATR-14 (chỉ display trong indicators_snapshot)
@@ -31,18 +31,18 @@ Phát hiện thời điểm momentum đang **suy yếu sau khi RSI vượt vùng
 **Trigger SHORT trên 1 khung**:
 1. `bars_since_reversal < max_distance_candles` — đảo chiều phải còn "tươi"
 2. `ema_rsi_20 > min_ema_rsi` (default 50) — RSI vẫn ở vùng cao
-3. Hiện tại vẫn duy trì `ema_rsi_5 < ema_rsi_10 < ema_rsi_20`
+3. Hiện tại vẫn duy trì `ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20`
 4. (Tùy chọn 1D) `close < ema_filter` — chỉ short khi giá dưới EMA-200
 5. (Tùy chọn 1H) `ema_rsi_20 - ema_rsi_5 ≥ min_gap` — yêu cầu khoảng cách EMA-RSI tối thiểu
 
 **Filter 1W (tùy chọn, default BẬT)**:
-- Trên nến tuần **mới nhất**: `ema_rsi_5 < ema_rsi_10 < ema_rsi_20`.
+- Trên nến tuần **mới nhất**: `ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20`.
 - Đây là pre-check trước khi xử lý 1D/1H — nếu không thỏa, handler bail luôn, không phí API call cho 1D/1H.
 - Yêu cầu ≥ 50 nến tuần (~1 năm). Symbol không đủ data tuần → bị block (an toàn hơn là fire bừa).
 - Tắt bằng `use_weekly_filter=false` để giữ behavior cũ chỉ 1D + 1H.
 
 **Trigger SHORT tổng**: 
-- (Nếu `use_weekly_filter=true`) `1W[-1]: ema_rsi_5 < ema_rsi_10 < ema_rsi_20` **AND**
+- (Nếu `use_weekly_filter=true`) `1W[-1]: ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20` **AND**
 - `1D[-1].signal == -1` **AND** `1H[-1].signal == -1`.
 
 ### Tham số
@@ -53,7 +53,7 @@ Phát hiện thời điểm momentum đang **suy yếu sau khi RSI vượt vùng
 | Basic | `max_distance_candles` | 20 | Bị siêu thị bởi `n1d`/`m1h` per-TF |
 | Basic | `min_gap` | 0.0 | Khoảng EMA-RSI tối thiểu (áp 1H) |
 | Basic | `use_ema_filter` | false | Bật EMA-200 trend filter cho 1D |
-| Basic | `use_weekly_filter` | **true** | Bật filter 1W (yêu cầu nến tuần mới nhất có `ema_rsi_5 < ema_rsi_10 < ema_rsi_20`) |
+| Basic | `use_weekly_filter` | **true** | Bật filter 1W (yêu cầu nến tuần mới nhất có `ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20`) |
 | Basic | `min_ema_rsi` | 50.0 | Ngưỡng `ema_rsi_20` |
 | Advanced | `sl_pct` | 0.05 | Stop loss display Telegram (5%) |
 | Advanced | `tp1_pct` | 0.10 | Take profit 1 (10%) |
@@ -92,7 +92,7 @@ Cùng triết lý với `EmaRsiReversal` (3 đường EMA của RSI xếp giảm
 
 **Trên mỗi khung trong 3 khung** (1W, 1D, 1H), nến mới nhất `[-1]` phải thỏa:
 
-1. `ema_rsi_5 < ema_rsi_10 < ema_rsi_20` (đường EMA-RSI xếp giảm dần — momentum yếu đi)
+1. `ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20` (đường EMA-RSI xếp giảm dần — momentum yếu đi)
 2. `bars_since_not_desc < max_distance` — khoảng cách từ nến gần nhất mà 3 đường KHÔNG xếp như trên đến nến hiện tại phải < `max_distance` (default 10). Điều kiện này đảm bảo pattern **vừa mới hình thành**, không phải đã ở trạng thái này quá lâu (giảm rủi ro fire muộn).
 
 **Riêng 1H — level guard**: `ema_rsi_5 > min_ema_rsi_5` (default 40). Tránh fire khi RSI đã quá thấp (đã bị bán mạnh trước đó, kèo SHORT muộn).

@@ -29,7 +29,7 @@ class EmaRsiReversalParams(BaseModel):
     use_ema_filter: bool = Field(False, description="Enable EMA-200 trend filter (1D)")
     use_weekly_filter: bool = Field(
         True,
-        description="Bộ lọc 1W: chỉ fire khi nến tuần mới nhất có ema_rsi_5 < ema_rsi_10 < ema_rsi_20",
+        description="Bộ lọc 1W: chỉ fire khi nến tuần mới nhất có ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20",
     )
     min_ema_rsi: float = Field(50.0, ge=0.0, le=100.0, description="ema_rsi_20 threshold")
     telegram_on_no_signal: bool = Field(

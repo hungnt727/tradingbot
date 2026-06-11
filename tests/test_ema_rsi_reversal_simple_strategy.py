@@ -1,6 +1,6 @@
 """Unit tests for EmaRsiReversalSimpleStrategy.
 
-Pattern detection: ``ema_rsi_5 < ema_rsi_10 < ema_rsi_20`` AND
+Pattern detection: ``ema_rsi_5 < ema_rsi_10 and ema_rsi_5 < ema_rsi_20`` AND
 ``bars_since_not_desc < max_distance``. Level guard is the handler's job, not
 this class's — these tests only validate compute_indicators + generate_signals.
 """

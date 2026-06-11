@@ -11,7 +11,7 @@ class EmaRsiReversalStrategy(BaseStrategy):
     EMA RSI Reversal Strategy
     
     Định nghĩa nến đảo chiều:
-        - ema_rsi_5 < ema_rsi_10 < ema_rsi_20
+        - ema_rsi_5 < ema_rsi_10 và ema_rsi_5 < ema_rsi_20
         - nến trước đó KHÔNG thỏa mãn điều kiện trên
     
     Tín hiệu (SHORT):
@@ -57,8 +57,8 @@ class EmaRsiReversalStrategy(BaseStrategy):
             df['ema_rsi_20'] = np.nan
             
         # 3. Xác định nến đảo chiều (suy yếu)
-        # Điểm bắt đầu suy yếu: 5 < 10 < 20
-        is_downward = (df['ema_rsi_5'] < df['ema_rsi_10']) & (df['ema_rsi_10'] < df['ema_rsi_20'])
+        # Điểm bắt đầu suy yếu: 5 < 10 và 5 < 20
+        is_downward = (df['ema_rsi_5'] < df['ema_rsi_10']) & (df['ema_rsi_5'] < df['ema_rsi_20'])
         is_downward_prev = is_downward.shift(1).infer_objects(copy=False).fillna(False)
         
         df['is_reversal'] = is_downward & (~is_downward_prev)
@@ -105,9 +105,9 @@ class EmaRsiReversalStrategy(BaseStrategy):
         # Tín hiệu SHORT khi:
         # 1. Thời gian kể từ khi bắt đầu suy yếu (bars_since_reversal) < max_distance_candles
         # 2. ema_rsi_20 > 50 (RSI vẫn nằm ở ngưỡng cao)
-        # 3. Nến hiện tại VẪN ĐANG ở trạng thái suy yếu (5 < 10 < 20)
-        
-        is_downward = (df['ema_rsi_5'] < df['ema_rsi_10']) & (df['ema_rsi_10'] < df['ema_rsi_20'])
+        # 3. Nến hiện tại VẪN ĐANG ở trạng thái suy yếu (5 < 10 và 5 < 20)
+
+        is_downward = (df['ema_rsi_5'] < df['ema_rsi_10']) & (df['ema_rsi_5'] < df['ema_rsi_20'])
         condition = (df['bars_since_reversal'] < self.max_distance_candles) & (df['ema_rsi_20'] > self.min_ema_rsi) & is_downward
         
         # Bổ sung điều kiện EMA (Chỉ short nếu giá dưới EMA filter)

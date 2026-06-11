@@ -2,7 +2,7 @@
 
 Fires SHORT when **all** of these hold:
 
-  - 1W [-1]: descending order (``ema_rsi_5 < ema_rsi_10 < ema_rsi_20``) **AND**
+  - 1W [-1]: descending order (``ema_rsi_5 < ema_rsi_10 and ema_rsi_5 < ema_rsi_20``) **AND**
              ``bars_since_not_desc < max_distance``
   - 1D [-1]: same pattern + freshness check
   - 1H [-1]: same pattern + freshness check **AND** ``ema_rsi_5 > min_ema_rsi_5``

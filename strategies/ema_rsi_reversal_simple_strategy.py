@@ -1,7 +1,7 @@
 """EMA-RSI Reversal Simple — pattern-only variant of EmaRsiReversal.
 
 Three checks per timeframe:
-  1. ``ema_rsi_5 < ema_rsi_10 < ema_rsi_20`` on the latest candle ("descending order").
+  1. ``ema_rsi_5 < ema_rsi_10 and ema_rsi_5 < ema_rsi_20`` on the latest candle ("descending order").
   2. The descending order started within the last ``max_distance`` candles —
      i.e. ``bars_since_not_desc < max_distance``.
 
@@ -43,7 +43,7 @@ class EmaRsiReversalSimpleStrategy(BaseStrategy):
             df["ema_rsi_10"] = np.nan
             df["ema_rsi_20"] = np.nan
 
-        df["is_desc"] = (df["ema_rsi_5"] < df["ema_rsi_10"]) & (df["ema_rsi_10"] < df["ema_rsi_20"])
+        df["is_desc"] = (df["ema_rsi_5"] < df["ema_rsi_10"]) & (df["ema_rsi_5"] < df["ema_rsi_20"])
 
         # bars_since_not_desc: number of candles since the most recent candle
         # that did NOT satisfy the descending order. A small value means the

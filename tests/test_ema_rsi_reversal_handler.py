@@ -15,8 +15,8 @@ def _df(n: int, freq: str = "W", *, trend: str = "down") -> pd.DataFrame:
     """Build a synthetic OHLCV df with a controllable price trend.
 
     ``trend="down"`` produces a price series that pumps then dumps — once RSI
-    falls from a peak, the EMAs of RSI stack as ``ema_rsi_5 < ema_rsi_10 <
-    ema_rsi_20`` (the descending ordering the 1W filter checks for).
+    falls from a peak, the EMAs of RSI stack as ``ema_rsi_5 < ema_rsi_10 and
+    ema_rsi_5 < ema_rsi_20`` (the descending ordering the 1W filter checks for).
     ``trend="up"`` produces a steady uptrend so the EMAs stack the other way.
     """
     idx = pd.date_range("2024-01-01", periods=n, freq=freq, tz="UTC")

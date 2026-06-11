@@ -44,7 +44,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/CHANGE_ME/tradingbot:latest
+    image: ghcr.io/hungnt727/tradingbot:latest
     container_name: tradingbot_web
     restart: unless-stopped
     env_file: .env                              # SESSION_SECRET_KEY, TELEGRAM_BOT_TOKEN, COINMARKETCAP_API_KEY
@@ -66,7 +66,7 @@ services:
       start_period: 15s
 
   worker:
-    image: ghcr.io/CHANGE_ME/tradingbot:latest
+    image: ghcr.io/hungnt727/tradingbot:latest
     container_name: tradingbot_worker
     restart: unless-stopped
     env_file: .env

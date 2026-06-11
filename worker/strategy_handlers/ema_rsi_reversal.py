@@ -39,7 +39,7 @@ def build(params: dict) -> tuple[BaseStrategy, BaseStrategy]:
 
 
 def _weekly_filter_passes(strat, exchange: str, symbol: str) -> bool | None:
-    """Check that the latest 1W candle has ema_rsi_5 < ema_rsi_10 < ema_rsi_20.
+    """Check that the latest 1W candle has ema_rsi_5 < ema_rsi_10 and ema_rsi_5 < ema_rsi_20.
 
     Returns ``True`` if the weekly EMA-RSI is ordered descending (filter passes),
     ``False`` if not (filter blocks), or ``None`` if 1W data is unavailable /
@@ -51,7 +51,7 @@ def _weekly_filter_passes(strat, exchange: str, symbol: str) -> bool | None:
     w = strat.compute_indicators(df_1w)
     last = w.iloc[-1]
     # NaN comparisons evaluate to False — safe (we'd block if EMAs aren't computed).
-    return bool(last["ema_rsi_5"] < last["ema_rsi_10"] < last["ema_rsi_20"])
+    return bool(last["ema_rsi_5"] < last["ema_rsi_10"] and last["ema_rsi_5"] < last["ema_rsi_20"])
 
 
 def scan(strat_high, strat_low, exchange: str, symbol: str, params: dict) -> dict | None:

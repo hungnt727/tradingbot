@@ -7,7 +7,7 @@ numpy>=2.2.6
 # Database
 sqlalchemy==2.0.30
 alembic==1.13.1
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10  # 2.9.9 has no cp313 wheel; 2.9.10+ does (needed for python:3.13-slim image)
 
 # Redis
 redis==5.0.4
